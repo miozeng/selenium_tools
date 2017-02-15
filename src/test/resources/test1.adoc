@@ -1,0 +1,37 @@
+= msg
+
+*modulname* ::
+ excute time:2016-12-03
++
+desc
+
+. *testcasename*
+     desc
+
+.. teststep1
+*** table.
++
+[cols="8*"]
+|===
+|stepno
+|url
+|element_value
+|getType
+|doType
+|stepno
+|excptValue
+|result
+
+|1.0
+|aaaa
+|aa
+|aa
+|doType
+|stepno
+|excptValue
+|success
+|===
+ 
+*** image.
++
+image::sunset.jpg[caption="Figure 1: ", title="A mountain sunset", alt="Sunset", width="300", height="200", link="http://www.flickr.com/photos/javh/5448336655"]
