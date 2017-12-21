@@ -33,6 +33,10 @@ public class SeProject  extends AbstractTimestampEntity{
 	@JsonView(GenericJsonView.Summary.class)
 	private String projectDesc;
 	
+	@Column(name="project_show")
+	@JsonView(GenericJsonView.Summary.class)
+	private Boolean projectShow;
+	
 	@OneToMany(mappedBy = "project", fetch=FetchType.LAZY)
 	private List<SeModul> moduls ;
 
@@ -69,6 +73,16 @@ public class SeProject  extends AbstractTimestampEntity{
 	public void setModuls(List<SeModul> moduls) {
 		this.moduls = moduls;
 	}
+
+	public Boolean getProjectShow() {
+		return projectShow;
+	}
+
+	public void setProjectShow(Boolean projectShow) {
+		this.projectShow = projectShow;
+	}
+
+
 	
 	
 }

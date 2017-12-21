@@ -3,6 +3,7 @@ package com.mio.selenium.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,6 +18,7 @@ import com.mio.selenium.service.SeTestStepSevice;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 
+@CrossOrigin
 @RestController
 @RequestMapping(value = "/step")
 @Api(value = "/step", description = "step API")
@@ -36,5 +38,25 @@ public class TestStepController {
 	public String postUser(@RequestBody SeTestStep step) {
 		testStepSevice.saveOrUpdate(step);
 		return "success";
+	}
+	
+	
+	@RequestMapping(value = "/findById/{stepId}", method = RequestMethod.GET)
+	@ApiOperation(notes = "findById ", httpMethod = "GET", value = "findById")
+	@JsonView(GenericJsonView.Summary.class)
+	public SeTestStep findById(@PathVariable Long stepId){
+		return testStepSevice.findById(stepId);
+	}
+	
+	@RequestMapping(value = "/delete/{stepId}", method = RequestMethod.GET)
+	@ApiOperation(notes = "delete ", httpMethod = "GET", value = "delete")
+	public void delete(@PathVariable Long stepId){
+		 testStepSevice.delete(stepId);
+	}
+	
+	@RequestMapping(value = "/getMaxSeq/{caseId}", method = RequestMethod.GET)
+	@ApiOperation(notes = "getMaxSeq ", httpMethod = "GET", value = "getMaxSeq")
+	public Integer getMaxSeq(@PathVariable Long caseId){
+		return testStepSevice.getMaxSeq(caseId);
 	}
 }

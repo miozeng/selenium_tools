@@ -13,5 +13,7 @@ public interface SeModulService {
 	
 	SeModul findById(Long modulId);
 
-	public Map<String,Object> runModulTest(Long id, boolean iscreate );
+	void delete(Long modulId);
+	
+	public Map<String,Object> runModulTest(Long id, boolean iscreate);
 }

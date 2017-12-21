@@ -19,8 +19,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.mio.selenium.domain.SeDoType;
+import com.mio.selenium.domain.SeGetType;
 import com.mio.selenium.domain.SeTestCase;
 import com.mio.selenium.domain.SeTestStep;
+
 
 public class RunCaseUtil {
 	
@@ -36,11 +38,13 @@ public class RunCaseUtil {
 		String caseRet = "";
 		List<SeTestStep> steps = tcase.getSteps();
 		Collections.sort(steps);
-
+        String httpurl ="";
 		// getpath
 		String path = lpath + tcase.getCaseName();
 		if (tcase.getModul() != null && tcase.getModul().getProject() != null) {
 			path = lpath + tcase.getModul().getProject().getProjectName() + "\\" + tcase.getModul().getModulName()
+					+ "\\" + tcase.getCaseName();
+			httpurl = tcase.getModul().getProject().getProjectName() + "\\" + tcase.getModul().getModulName()
 					+ "\\" + tcase.getCaseName();
 		}
 		
@@ -73,6 +77,7 @@ public class RunCaseUtil {
 			boolean ret = RunCaseUtil.testCaseProcessor(driver, step);
 		
 			if (!ret) {
+				step.setSuccess(false);
 				caseRet += step.getStepNo() + "_" + step.getStepName() + " has error test failure;";
 				logger.error(caseRet);
 				if(sb != null){
@@ -80,6 +85,7 @@ public class RunCaseUtil {
 					sb.append("|==="+System.getProperty("line.separator"));
 				}
 			}else{
+				step.setSuccess(true);
 				if(sb != null){
 					sb.append("|success"+System.getProperty("line.separator"));
 					sb.append("|==="+System.getProperty("line.separator"));
@@ -89,19 +95,29 @@ public class RunCaseUtil {
 			
 			if (!ret || step.getTakePhoto()) {
 				logger.info(" excute failure or need to take photo....");
-				RunCaseUtil.getScreen(driver, step, path,sb);
+				RunCaseUtil.getScreen(driver, step, path,sb,httpurl);
 			}
-
+			
+			try {
+				if(step.getWaitTime() != null){
+					Thread.sleep(step.getWaitTime());
+				}
+			} catch (Exception e) {
+				// TODO: handle exception
+			}
+			
 		}
 		
 		driver.quit();
 		return caseRet;
 	}
 	
-	public static boolean getScreen(WebDriver driver, SeTestStep step, String path,StringBuffer sb) {
+	public static boolean getScreen(WebDriver driver, SeTestStep step, String path,StringBuffer sb,String httpurl) {
 		try {
 			File scrFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
 			String filePath = path + "\\screenshot_" + step.getTestCase().getCaseName() + "_" + step.getStepName() + ".png";
+			httpurl = httpurl+"\\screenshot_" + step.getTestCase().getCaseName() + "_" + step.getStepName() + ".png";
+//			httpurl =httpurl.replaceAll("\\", "/");
 			logger.info("image path =:" + filePath);
 			FileUtils.copyFile(scrFile, new File(filePath));
 			if(sb != null){
@@ -110,8 +126,9 @@ public class RunCaseUtil {
 			sb.append("+"+System.getProperty("line.separator"));
 			sb.append(
 					"image::sunset.jpg[caption=\"Figure 1: \", title=\"" + step.getStepName() +"\", alt=\"img\", width=\"150\", "
-							+ "height=\"100\", link=\""+filePath+"\"]"+System.getProperty("line.separator"));
+							+ "height=\"100\", link=\""+httpurl+"\"]"+System.getProperty("line.separator"));
 			}
+			step.setImage(httpurl);
 		} catch (Exception e) {
 			System.out.println("");
 			return false;
@@ -122,28 +139,23 @@ public class RunCaseUtil {
 	public static boolean testCaseProcessor(WebDriver driver, SeTestStep step) {
 
 		try {
-			List<WebElement> elements = null;
 			WebElement element = null;
 			boolean result = true;
 
 			// get test elemnt
-			if (step.getGetType() != null) {
+			if (step.getGetType() != null && step.getGetType()  != SeGetType.Alert) {
 				logger.info("get WebElement....gettype=:"+step.getGetType() +" value=:" +step.getElementValue());
-				switch (step.getGetType()) {
-				case byClass:
-					elements = driver.findElements(By.className(step.getElementValue()));
-					break;
-				default:
+				if(step.getElementSeq() == null ||step.getElementSeq()  ==0){
 					element = RunCaseUtil.getWebElemet( step, driver);
-					break;
+				}else{
+					element = RunCaseUtil.getWebElemets( step, driver,step.getElementSeq());
 				}
-
 			}
 
 			// do something
 			if (step.getDoType() != null && step.getDoType() != SeDoType.noThing) {
 				logger.info("do somthimg ....dotype=:" + step.getDoType() );
-				result = doSomething(step, element, elements, driver);
+				result = doSomething(step, element, driver);
 			}
 			
 		
@@ -163,8 +175,11 @@ public class RunCaseUtil {
 		case byTag:
 			element = driver.findElement(By.tagName(e.getElementValue()));
 			break;
-		case byname:
+		case byName:
 			element = driver.findElement(By.name(e.getElementValue()));
+			break;
+		case byClass:
+			element = driver.findElement(By.className(e.getElementValue()));
 			break;
 		case byLink:
 			element = driver.findElement(By.linkText(e.getElementValue()));
@@ -184,16 +199,47 @@ public class RunCaseUtil {
 		}
 		return element;
 	}
+	private static WebElement getWebElemets(SeTestStep e, WebDriver driver,Integer seq) {
+		List<WebElement> elements = null;
+		switch (e.getGetType()) {
+		case byId:
+			elements = driver.findElements(By.id(e.getElementValue()));
+			break;
+		case byTag:
+			elements = driver.findElements(By.tagName(e.getElementValue()));
+			break;
+		case byName:
+			elements = driver.findElements(By.name(e.getElementValue()));
+			break;
+		case byClass:
+			elements = driver.findElements(By.className(e.getElementValue()));
+			break;
+		case byLink:
+			elements = driver.findElements(By.linkText(e.getElementValue()));
+			break;
+		case byPartialLink:
+			elements = driver.findElements(By.partialLinkText(e.getElementValue()));
+			break;
+		case byCss:
+			elements = driver.findElements(By.cssSelector(e.getElementValue()));
+			break;
+		case byXpath:
+			elements = driver.findElements(By.xpath(e.getElementValue()));
+			break;
 
-	private static boolean doSomething(SeTestStep step, WebElement element, List<WebElement> elements,
-			WebDriver driver) {
+		default:
+			break;
+		}
+		return elements.get(seq);
+	}
+	private static boolean doSomething(SeTestStep step, WebElement element, WebDriver driver) {
 		boolean result = true;
 		switch (step.getDoType()) {
 		case FetchingPage:
 			driver.get(step.getUrl());
 			break;
 		case getText:
-			result = step.getExcptValue().equals(element.getText());
+			result = step.getExcptValue().trim().equals(element.getText().trim());
 			break;
 		case click:
 			element.click();
@@ -226,6 +272,12 @@ public class RunCaseUtil {
 		case isDisplayed:
 			result = (element.isDisplayed() == Boolean.parseBoolean(step.getExcptValue()));
 			break;
+		case accept:
+			driver.switchTo().alert().accept();
+			break;
+		case dismiss:
+			driver.switchTo().alert().dismiss();
+			break;
 		default:
 			break;
 		}
@@ -245,9 +297,38 @@ public class RunCaseUtil {
    	        driver = new InternetExplorerDriver();
         }
         driver.manage().window().maximize();
-		driver.manage().timeouts().implicitlyWait(60, TimeUnit.SECONDS);
 		driver.manage().timeouts().implicitlyWait(15, TimeUnit.SECONDS);
+//		driver.manage().timeouts().implicitlyWait(15, TimeUnit.SECONDS);
         return driver;
 	}
 
+	
+	public static String getSysPath() {
+		String path = Thread.currentThread().getContextClassLoader().getResource("").toString();
+		path = path.replace("file:/", ""); 
+		path = path.replace("classes/", "");
+		if(path.endsWith("/")){
+			path = path.substring(0,path.length()-2);
+		}
+		path = path.substring(0, path.lastIndexOf("/"));
+		path += "/project/";
+		return path;
+	}
+	
+	public static void main(String[] args) {
+		String path = Thread.currentThread().getContextClassLoader().getResource("").toString();
+		path = path.replace("file:/", ""); 
+		path = path.replace("classes/", "");
+		System.out.println(path);
+		if(path.endsWith("/")){
+			path = path.substring(0,path.length()-2);
+			System.out.println(path);
+		}
+		path = path.substring(0, path.lastIndexOf("/"));
+		System.out.println(path);
+		path += "/project/";
+		
+		System.out.println(path);
+	}
+	
 }

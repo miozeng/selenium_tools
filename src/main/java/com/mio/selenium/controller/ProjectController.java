@@ -34,6 +34,14 @@ public class ProjectController {
 	public List<SeProject> getList() {
 		return projectService.findAll();
 	}
+	
+	@RequestMapping(value = "/showlist", method = RequestMethod.GET)
+	@ApiOperation(notes = "find  Project .  ", httpMethod = "GET", value = "find all ")
+	@JsonView(GenericJsonView.Summary.class)
+	public List<SeProject> getShowList() {
+		return projectService.findAllShow();
+	}
+
 
 	@RequestMapping(value = "/save", method = RequestMethod.POST)
 	@ApiOperation(notes = "save  Project .  ", httpMethod = "POST", value = "save ")
@@ -41,12 +49,23 @@ public class ProjectController {
 		projectService.save(project);
 		return "success";
 	}
-
+	@RequestMapping(value = "/findById/{projectId}", method = RequestMethod.GET)
+	@ApiOperation(notes = "findById ", httpMethod = "GET", value = "runTest")
+	@JsonView(GenericJsonView.Summary.class)
+	public SeProject findById(@PathVariable Long projectId){
+		return projectService.findById(projectId);
+	}
+	
 	@RequestMapping(value = "/runTest/{projectId}/{iscreate}", method = RequestMethod.GET)
 	@ApiOperation(notes = "runTest ", httpMethod = "GET", value = "runTest")
 	public Map<String,Object> runTest(@PathVariable Long projectId,@PathVariable boolean iscreate){
 		return projectService.runProjectTest(projectId, iscreate);
 	}
 	
+	@RequestMapping(value = "/delete/{projectId}", method = RequestMethod.GET)
+	@ApiOperation(notes = "delete ", httpMethod = "GET", value = "delete")
+	public void delete(@PathVariable Long projectId){
+		projectService.delete(projectId);
+	}
 	
 }

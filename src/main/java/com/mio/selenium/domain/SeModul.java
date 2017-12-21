@@ -1,5 +1,6 @@
 package com.mio.selenium.domain;
 
+import java.util.Date;
 import java.util.List;
 
 import javax.persistence.Column;
@@ -36,14 +37,19 @@ public class SeModul extends AbstractTimestampEntity{
 	@JsonView(GenericJsonView.Summary.class)
 	private Integer sequence;
 	
-	@ManyToOne(fetch= FetchType.LAZY)
+	@ManyToOne(fetch= FetchType.EAGER)
 	@JoinColumn(name = "project_id", nullable = false)
+	@JsonView(GenericJsonView.Summary.class)
 	private SeProject project;
 	
 	@OneToMany(mappedBy = "modul", fetch=FetchType.LAZY)
 	private List<SeTestCase> testcases ;
 
 
+	@Column(name = "excute_date")
+	@JsonView(GenericJsonView.Summary.class)
+	private Date excuteDate;
+	
 
 	public Long getModulId() {
 		return modulId;
@@ -92,6 +98,14 @@ public class SeModul extends AbstractTimestampEntity{
 
 	public void setTestcases(List<SeTestCase> testcases) {
 		this.testcases = testcases;
+	}
+
+	public Date getExcuteDate() {
+		return excuteDate;
+	}
+
+	public void setExcuteDate(Date excuteDate) {
+		this.excuteDate = excuteDate;
 	}
 
 

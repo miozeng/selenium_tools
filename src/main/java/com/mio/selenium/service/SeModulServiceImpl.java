@@ -15,9 +15,11 @@ import org.springframework.stereotype.Service;
 
 import com.mio.selenium.dao.SeModulDao;
 import com.mio.selenium.dao.SeTestCaseDao;
+import com.mio.selenium.dao.SeTestStepDao;
 import com.mio.selenium.domain.SeModul;
 import com.mio.selenium.domain.SeProject;
 import com.mio.selenium.domain.SeTestCase;
+import com.mio.selenium.domain.SeTestStep;
 import com.mio.selenium.util.AsciidocConvert;
 import com.mio.selenium.util.MyStringUtil;
 import com.mio.selenium.util.RunCaseUtil;
@@ -33,8 +35,8 @@ public class SeModulServiceImpl implements SeModulService {
 	@Autowired
 	private SeTestCaseDao seTestCaseDao;
 
-	@Value("${path}")
-	private String lpath;
+	@Autowired
+	private SeTestStepDao seTestStepDao;
 	
 	@Value("${type}")
 	private String type;
@@ -59,10 +61,17 @@ public class SeModulServiceImpl implements SeModulService {
 	public SeModul saveOrUpdate(SeModul modul) {
 		if (modul.getModulId() == null) {
 			modul.setCreateDate(new Date());
+			modul.setLastModifiedDate(new Date());
+			modulDao.saveOrUpdate(modul);
+			return modul;
+		}else{
+			SeModul modul2 =modulDao.findById(modul.getModulId());
+			modul2.setModulName(modul.getModulName());
+			modul2.setModulDesc(modul.getModulDesc());
+			modul2.setLastModifiedDate(new Date());
+			modulDao.saveOrUpdate(modul2);
+			return modul2;
 		}
-		modul.setLastModifiedDate(new Date());
-		modulDao.saveOrUpdate(modul);
-		return modul;
 	}
 
 	@Override
@@ -72,6 +81,7 @@ public class SeModulServiceImpl implements SeModulService {
 
 	@Override
 	public Map<String, Object> runModulTest(Long id, boolean iscreate) {
+		String temppath = RunCaseUtil.getSysPath();
 		Map<String, Object> retMap = new HashMap<String, Object>();
 		boolean isrunOk = true;
 		boolean isdocOk = true;
@@ -80,9 +90,11 @@ public class SeModulServiceImpl implements SeModulService {
 
 	
 
-		String path = lpath + project.getProjectName() + "\\";
+		String path = temppath + project.getProjectName() + "/";
+		logger.info("html url : " + path);
         File file =  new File(path);
-		if(file.exists()){
+		if(!file.exists()){
+			logger.info("creat file");
 			file.mkdirs();
 		}
 		List<SeTestCase> stcs = seTestCaseDao.findByProperty("modul.modulId", seModul.getModulId());
@@ -96,10 +108,16 @@ public class SeModulServiceImpl implements SeModulService {
 		sb2.append(seModul.getModulDesc() + System.getProperty("line.separator"));
 		for (SeTestCase testcase : stcs) {
 			 WebDriver driver = RunCaseUtil.getDriver(type, chormedrivers, firefoxdrivers, iedrivers);
-			String ret = RunCaseUtil.runcase(driver,testcase, sb2,path);
+			String ret = RunCaseUtil.runcase(driver,testcase, sb2,temppath);
+			List<SeTestStep> steps = testcase.getSteps();
+			seTestStepDao.saveList(steps);
+			testcase.setSuccess(true);
 			if (!"".equals(ret)) {
 				isrunOk = false;
+				retMap.put("msg", ret);
+				testcase.setSuccess(false);
 			}
+			seTestCaseDao.save(testcase);
 		}
 
 		logger.info(seModul.getModulName() + "start od Asciidoc doc process");
@@ -112,11 +130,25 @@ public class SeModulServiceImpl implements SeModulService {
 		}
 		logger.info(seModul.getModulName() + " end of Asciidoc doc process");
 
-	
+		seModul.setExcuteDate(new Date());
+		modulDao.saveOrUpdate(seModul);
 	
 		retMap.put("isrunOk", isrunOk);
 		retMap.put("isdocOk", isdocOk);
 		return retMap;
 	}
+
+	@Override
+	public void delete(Long modulId) {
+		SeModul sm = modulDao.findById(modulId);
+		for (SeTestCase tc : sm.getTestcases()) {
+			for (SeTestStep ts : tc.getSteps()) {
+				seTestStepDao.delete(ts);
+			}
+			seTestCaseDao.delete(tc);
+		}
+		modulDao.delete(sm);
+	}
+	
 
 }

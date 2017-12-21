@@ -53,6 +53,10 @@ public class SeTestStep  extends AbstractTimestampEntity implements Comparable<S
 	private String elementValue;
 	
 	@JsonView(GenericJsonView.Summary.class)
+	@Column(name="element_seq")
+	private Integer elementSeq;
+	
+	@JsonView(GenericJsonView.Summary.class)
 	@Enumerated(EnumType.STRING)
 	private SeGetType getType;
 	
@@ -67,12 +71,23 @@ public class SeTestStep  extends AbstractTimestampEntity implements Comparable<S
 	private String excptValue;
 	
 	@JsonView(GenericJsonView.Summary.class)
+	@Column(name="wait_time")
+	private Long waitTime;
+	
+	@JsonView(GenericJsonView.Summary.class)
 	@Column( length=500)
 	private String url;
 	
 	@ManyToOne(fetch= FetchType.LAZY)
 	@JoinColumn(name = "testcase_id", nullable = false)
 	private SeTestCase testCase;
+	
+	@JsonView(GenericJsonView.Summary.class)
+	private Boolean success;
+	
+	@JsonView(GenericJsonView.Summary.class)
+	@Column( length=500)
+	private String image;
 
 
 
@@ -150,6 +165,14 @@ public class SeTestStep  extends AbstractTimestampEntity implements Comparable<S
 	
 	
 
+	public Long getWaitTime() {
+		return waitTime;
+	}
+
+	public void setWaitTime(Long waitTime) {
+		this.waitTime = waitTime;
+	}
+
 	public String getElementName() {
 		return elementName;
 	}
@@ -164,6 +187,15 @@ public class SeTestStep  extends AbstractTimestampEntity implements Comparable<S
 
 	public void setElementValue(String elementValue) {
 		this.elementValue = elementValue;
+	}
+
+	
+	public Integer getElementSeq() {
+		return elementSeq;
+	}
+
+	public void setElementSeq(Integer elementSeq) {
+		this.elementSeq = elementSeq;
 	}
 
 	public SeGetType getGetType() {
@@ -189,6 +221,22 @@ public class SeTestStep  extends AbstractTimestampEntity implements Comparable<S
 		  }else{
 			  return -1;
 		  }
+	}
+
+	public Boolean getSuccess() {
+		return success;
+	}
+
+	public void setSuccess(Boolean success) {
+		this.success = success;
+	}
+
+	public String getImage() {
+		return image;
+	}
+
+	public void setImage(String image) {
+		this.image = image;
 	}
 
 

@@ -16,9 +16,11 @@ import org.springframework.stereotype.Service;
 import com.mio.selenium.dao.SeModulDao;
 import com.mio.selenium.dao.SeProjectDao;
 import com.mio.selenium.dao.SeTestCaseDao;
+import com.mio.selenium.dao.SeTestStepDao;
 import com.mio.selenium.domain.SeModul;
 import com.mio.selenium.domain.SeProject;
 import com.mio.selenium.domain.SeTestCase;
+import com.mio.selenium.domain.SeTestStep;
 import com.mio.selenium.util.AsciidocConvert;
 import com.mio.selenium.util.MyStringUtil;
 import com.mio.selenium.util.RunCaseUtil;
@@ -38,9 +40,8 @@ public class SeProjectServiceImpl implements SeProjectService {
 	@Autowired 
 	private SeTestCaseDao seTestCaseDao;
 	
-	
-	@Value("${path}")
-	private String lpath;
+	@Autowired
+	private SeTestStepDao seTestStepDao;
 	
 	@Value("${type}")
 	private String type;
@@ -58,25 +59,53 @@ public class SeProjectServiceImpl implements SeProjectService {
 	public SeProject save(SeProject project) {
 		if (project.getProjectId() == null) {
 			project.setCreateDate(new Date());
+			project.setLastModifiedDate(new Date());
+			seProjectDao.save(project);
+			return project;
+		}else{
+			SeProject project2= seProjectDao.findById(project.getProjectId());
+			project2.setProjectName(project.getProjectName());
+			project2.setProjectDesc(project.getProjectDesc());
+			project2.setLastModifiedDate(new Date());
+			project2.setProjectShow(project.getProjectShow());
+			seProjectDao.save(project2);
+			return project2;
 		}
-		project.setLastModifiedDate(new Date());
-		seProjectDao.save(project);
-		return project;
+	
 	}
 
 	@Override
 	public SeProject findById(Long id) {
 		return seProjectDao.findById(id);
 	}
-
+	
+	@Override
+	public void delete(Long id) {
+		SeProject sp = seProjectDao.findById(id);
+		for (SeModul sm : sp.getModuls()) {
+			for (SeTestCase tc : sm.getTestcases()) {
+				for (SeTestStep ts : tc.getSteps()) {
+					seTestStepDao.delete(ts);
+				}
+				seTestCaseDao.delete(tc);
+			}
+			modulDao.delete(sm);
+		}
+		seProjectDao.delete(sp);
+		
+	}
 	@Override
 	public List<SeProject> findAll() {
 		return seProjectDao.findAll();
 	}
-
+	@Override
+	public List<SeProject> findAllShow() {
+		return seProjectDao.findByProperty("projectShow", true);
+	}
 	@Override
 	public Map<String,Object> runProjectTest(Long id, boolean iscreate ) {
 		Map<String,Object> retMap= new HashMap<String,Object>();
+		String temppath = RunCaseUtil.getSysPath();
 		boolean isrunOk = true;
 		boolean isdocOk = true;
 		logger.info("start to excute project");
@@ -87,9 +116,9 @@ public class SeProjectServiceImpl implements SeProjectService {
 		sb.append("*"+project.getProjectName()+"*::"+System.getProperty("line.separator"));
 		sb.append(project.getProjectDesc()+System.getProperty("line.separator"));
 		
-		String path = lpath + project.getProjectName() + "\\" ;
+		String path = temppath + project.getProjectName() + "/";
 		 File file =  new File(path);
-			if(file.exists()){
+			if(!file.exists()){
 				file.mkdirs();
 			}
 		List<SeModul> moduls = modulDao.findByProperty("project.projectId", id);
@@ -117,13 +146,19 @@ public class SeProjectServiceImpl implements SeProjectService {
 			sb2.append(seModul.getModulDesc()+System.getProperty("line.separator"));
 			for (SeTestCase testcase : stcs) {
 				 WebDriver driver = RunCaseUtil.getDriver(type, chormedrivers, firefoxdrivers, iedrivers);
-				String ret = RunCaseUtil.runcase(driver,testcase,sb2,lpath);
+				String ret = RunCaseUtil.runcase(driver,testcase,sb2,temppath);
+				List<SeTestStep> steps = testcase.getSteps();
+				seTestStepDao.saveList(steps);
+			
 				if (!"".equals(ret)) {
 					isrunOk = false;
 					failureNum++;
+					testcase.setSuccess(false);
 				}else{
 					successNum++;
+					testcase.setSuccess(true);
 				}
+				seTestCaseDao.save(testcase);
 			}
 			
 			logger.info(seModul.getModulName() +"start od Asciidoc doc process" );
@@ -141,6 +176,8 @@ public class SeProjectServiceImpl implements SeProjectService {
 			}else{
 				logger.info(seModul.getModulName() +" success");
 			}
+			seModul.setExcuteDate(new Date());
+			modulDao.saveOrUpdate(seModul);
 			sb.append("* tests result"+System.getProperty("line.separator"));
 			sb.append("+"+System.getProperty("line.separator"));
 			sb.append("A total of " + (failureNum+successNum) + "testcase ," + failureNum + " failure " + successNum + " success"+System.getProperty("line.separator"));
@@ -160,5 +197,9 @@ public class SeProjectServiceImpl implements SeProjectService {
 		retMap.put("isdocOk", isdocOk);
 		return retMap;
 	}
+
+
+
+
 
 }

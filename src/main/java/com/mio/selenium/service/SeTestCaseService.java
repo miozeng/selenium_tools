@@ -10,5 +10,7 @@ public interface SeTestCaseService {
 	
 	public SeTestCase findById(Long id);
 	
+	public void delete(Long id);
+	
 	public List<SeTestCase> findAllByModul(Long modulId);
 }

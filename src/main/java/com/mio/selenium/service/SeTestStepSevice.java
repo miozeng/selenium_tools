@@ -10,4 +10,9 @@ public interface SeTestStepSevice {
 	
 	SeTestStep saveOrUpdate(SeTestStep step);
 	
+	SeTestStep findById(Long stepId);
+	
+	void delete(Long stepId);
+	
+	public Integer getMaxSeq( Long caseId);
 }

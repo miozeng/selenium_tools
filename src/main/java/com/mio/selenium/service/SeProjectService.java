@@ -14,6 +14,10 @@ public interface SeProjectService {
 	
 	public List<SeProject> findAll();
 	
+	public List<SeProject> findAllShow();
+	
 	public Map<String,Object> runProjectTest(Long id, boolean iscreate );
+	
+	void delete(Long modulId);
 
 }

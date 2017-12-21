@@ -35,7 +35,7 @@ public abstract class BaseDaoImpl<T, ID extends Serializable> extends HibernateD
 
 	public void saveList(List<T> ts) {
 		for (T t : ts) {
-			this.getHibernateTemplate().save(t);
+			this.getHibernateTemplate().saveOrUpdate(t);
 		}
 
 	}

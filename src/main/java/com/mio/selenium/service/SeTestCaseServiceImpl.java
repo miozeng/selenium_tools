@@ -52,4 +52,14 @@ public class SeTestCaseServiceImpl implements SeTestCaseService {
 		return seTestCaseDao.findByProperty("modul.modulId", modulId);
 	}
 
+	@Override
+	public void delete(Long id) {
+		SeTestCase tc= seTestCaseDao.findById(id);
+		for (SeTestStep ts : tc.getSteps()) {
+			seTestStepDao.delete(ts);
+		}
+		
+		seTestCaseDao.delete(tc);
+	}
+
 }

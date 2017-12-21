@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FileUtils;
@@ -16,10 +17,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -37,6 +40,7 @@ import com.mio.selenium.util.RunCaseUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 
+@CrossOrigin
 @RestController
 @RequestMapping(value = "/testcase")
 @Api(value = "/testcase", description = "TestCase API")
@@ -52,20 +56,25 @@ public class TestCaseController {
 	@Autowired
 	private SeTestStepSevice testStepSevice;
 	
-	@Value("${type}")
+//	@Value("${type}")
+	 @Value("#{configProperties['type']}") 
 	private String type;
 	
-	@Value("${ie.driver}")
+//	@Value("${ie.driver}")
+	@Value("#{configProperties['ie.driver']}") 
 	private String iedrivers;
 	
-	@Value("${chrome.driver}")
+//	@Value("${chrome.driver}")
+	@Value("#{configProperties['chrome.driver']}") 
 	private String chormedrivers;
 	
-	@Value("${firefox.driver}")
+//	@Value("${firefox.driver}")
+	@Value("#{configProperties['firefox.driver']}") 
 	private String firefoxdrivers;
 	
-	@Value("${path}")
-	private String lpath;
+//	@Value("${temppath}")
+//	@Value("#{configProperties['url']}") 
+//	private String url;
 	@RequestMapping(value = "/list/{modulId}", method = RequestMethod.GET)
 	@ApiOperation(notes = "find  TestCase .  ", httpMethod = "GET", value = "find all ")
 	@JsonView(GenericJsonView.Summary.class)
@@ -80,10 +89,17 @@ public class TestCaseController {
 		return "success";
 	}
 	
+	
+	@RequestMapping(value = "/findById/{caseId}", method = RequestMethod.GET)
+	@ApiOperation(notes = "findById ", httpMethod = "GET", value = "findById")
+	@JsonView(GenericJsonView.Summary.class)
+	public SeTestCase findById(@PathVariable Long caseId){
+		return seTestCaseService.findById(caseId);
+	}
 
 	@RequestMapping(value = "/cvsimport/{modulId}", method = RequestMethod.POST)
 	@ApiOperation(notes = "import  testcase in cvs.  ", httpMethod = "POST", value = "import  testcase in cvs. ")
-	public Map<String, Object> importCvs(MultipartFile file,@PathVariable Long modulId) {
+	public Map<String, Object> importCvs(@RequestParam("file")MultipartFile file,@PathVariable Long modulId) {
 		logger.info("excute  testcase in cvs..file...");
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", true);
@@ -113,6 +129,7 @@ public class TestCaseController {
 	@ApiOperation(notes = "sexcut  testcase in cvs.  ", httpMethod = "POST", value = "excute  testcase in cvs. ")
 	public Map<String, Object> excuteCvs(MultipartFile file) {
 		logger.info("excute  testcase in cvs..file...");
+		String temppath = RunCaseUtil.getSysPath();
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", true);
 		File tmpfile = new File("C:\\tmp\\selenium\\" + file.getOriginalFilename());
@@ -121,7 +138,7 @@ public class TestCaseController {
 			FileUtils.copyInputStreamToFile(file.getInputStream(), tmpfile);
 			SeTestCase tcase = CvsUtil.cvsToCase(tmpfile);
 			 WebDriver driver = RunCaseUtil.getDriver(type, chormedrivers, firefoxdrivers, iedrivers);
-			String ret = RunCaseUtil.runcase(driver,tcase,null,lpath);
+			String ret = RunCaseUtil.runcase(driver,tcase,null,temppath);
 			 map.put("ret", true);
 			if(!"".equals(ret)){
 				map.put("ret", false);
@@ -143,15 +160,17 @@ public class TestCaseController {
 	public Map<String, Object> testCaseExcute(@PathVariable Long caseId) {
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", true);
+		String temppath = RunCaseUtil.getSysPath();
 		SeTestCase tcase = seTestCaseService.findById(caseId);
 		try {
 			 WebDriver driver = RunCaseUtil.getDriver(type, chormedrivers, firefoxdrivers, iedrivers);
-			String ret = RunCaseUtil.runcase(driver,tcase,null,lpath);
+			String ret = RunCaseUtil.runcase(driver,tcase,null,temppath);
 			if (!"".equals(ret)) {
 				map.put("ret", false);
 				map.put("msg", ret);
 			}
 		} catch (Exception e) {
+			e.printStackTrace();
 			map.put("ret", false);
 			map.put("msg", "something error");
 		}
@@ -159,10 +178,12 @@ public class TestCaseController {
 		return map;
 	}
 
-	@RequestMapping(value = "/casetocvs/{caseId}", method = RequestMethod.GET)
+	@RequestMapping(value = "/casetocvs", method = RequestMethod.GET)
 	@ApiOperation(notes = "testCase To Cvs .  ", httpMethod = "GET", value = "testCase To Cvs . ")
-	public void testCaseToCvs(HttpServletResponse res, @PathVariable Long caseId) throws IOException {
+	public void testCaseToCvs(HttpServletResponse res, HttpServletRequest request) throws IOException {
 		logger.info("start export cvs................");
+		String caseIdStr=request.getParameter("caseId");
+		Long caseId = Long.parseLong(caseIdStr);
 		SeTestCase tcase = seTestCaseService.findById(caseId);
 		List<SeTestStep> steps = testStepSevice.findByTestCase(caseId);
 		tcase.setSteps(steps);
@@ -195,7 +216,11 @@ public class TestCaseController {
 	}
 	
 
-
+	@RequestMapping(value = "/delete/{caseId}", method = RequestMethod.GET)
+	@ApiOperation(notes = "delete ", httpMethod = "GET", value = "delete")
+	public void delete(@PathVariable Long caseId){
+		seTestCaseService.delete(caseId);
+	}
 
 	
 }

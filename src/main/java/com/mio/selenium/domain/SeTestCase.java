@@ -41,13 +41,16 @@ public class SeTestCase  extends AbstractTimestampEntity{
 	@JsonView(GenericJsonView.Summary.class)
 	private Integer sequence;
 	
-	@ManyToOne(fetch= FetchType.LAZY)
+	@ManyToOne(fetch= FetchType.EAGER)
 	@JoinColumn(name = "modul_id", nullable = false)
+	@JsonView(GenericJsonView.Summary.class)
 	private SeModul modul;
 	
-	@OneToMany(mappedBy = "testCase", fetch=FetchType.LAZY)
+	@OneToMany(mappedBy = "testCase", fetch=FetchType.EAGER)
 	private List<SeTestStep> steps;
 
+	@JsonView(GenericJsonView.Summary.class)
+	private Boolean success;
 
 
 	public Long getCaseId() {
@@ -105,6 +108,15 @@ public class SeTestCase  extends AbstractTimestampEntity{
 	public void setSteps(List<SeTestStep> steps) {
 		this.steps = steps;
 	}
+
+	public Boolean getSuccess() {
+		return success;
+	}
+
+	public void setSuccess(Boolean success) {
+		this.success = success;
+	}
+
 
 
 
