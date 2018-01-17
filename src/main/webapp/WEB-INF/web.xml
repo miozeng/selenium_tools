@@ -56,8 +56,10 @@
 	        <param-value>true</param-value>
 	    </init-param>
 	</filter>
-	
-
+	<error-page>
+	    <error-code>404</error-code>
+	    <location>/dist/index.html</location>
+	</error-page>
 	<welcome-file-list>
 		<welcome-file>index.html</welcome-file>
 	</welcome-file-list>

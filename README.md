@@ -7,6 +7,42 @@ selenium的自动化测试工具目前只完成了后台部分。
 4.前端代码在[selenium_ui](https://github.com/miozeng/selenium_ui)   
 
 测试
+1。访问页面：http://localhost:8080/selenium_tools/dist/listproject
+2.由于angular2之后angular的router不是使用 #而是直接用html5风格的/   导致在页面刷新时报404的错误
+可以通过修改web.xml
+``` xml
+<error-page>
+	    <error-code>404</error-code>
+	    <location>/dist/index.html</location>
+	</error-page>
+```
+
+如果是springboot项目
+``` java
+import org.springframework.boot.autoconfigure.web.servlet.error.ErrorController;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+
+@Controller
+public class RestErrorController implements ErrorController {
+
+    private static final String ERROR_PATH = "/error";
+    private static final String TARGET_PATH = "forward:/";
+
+    @RequestMapping(value = "/error")
+    public String error() {
+        return TARGET_PATH;
+    }
+
+    @Override
+    public String getErrorPath() {
+        return ERROR_PATH;
+    }
+}
+```
+
+
 新建一个project，project下面新建一个module，进入case页面选择src/test/resources下的testmodule_case1 .csv导入之后则可以进行自动化测
 
 
