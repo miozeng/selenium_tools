@@ -78,7 +78,7 @@ var ModuleComponent = (function () {
     ModuleComponent.prototype.ngOnInit = function () {
         var _this = this;
         this.browserLang = this.translate.getBrowserLang();
-        this.baseurl = this.layoutService.get_base_url() + '/project/';
+        this.baseurl = '/selenium_tools/project/';
         this.route.params.subscribe(function (params) { return _this.projectId = params.projectId; });
         if (this.projectId != 0) {
             this.layoutService.get_modules(this.projectId).subscribe(function (res) {

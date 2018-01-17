@@ -248,7 +248,6 @@ var ProjctMenuComponent = (function () {
         this.router = router;
         this.isActive = false;
         this.showMenu = '';
-        this.baseUrl = "";
         this.projects = [];
         this.browserLang = 'en';
     }
@@ -258,14 +257,14 @@ var ProjctMenuComponent = (function () {
     ProjctMenuComponent.prototype.ngOnInit = function () {
         var _this = this;
         this.browserLang = this.translate.getBrowserLang();
-        this.httpClient.get(this.baseUrl + '/selenium_tools/project/showlist').subscribe(function (res) {
+        this.httpClient.get('/selenium_tools/project/showlist').subscribe(function (res) {
             _this.projects = res;
             console.log("projects:" + res);
         });
     };
     ProjctMenuComponent.prototype.redirect = function (id) {
-        this.router.navigate(['listmodule/' + id], { preserveQueryParams: true });
-        window.location.reload();
+        this.router.navigate(['/listmodule/' + id], { relativeTo: this.route });
+        setTimeout(function () { window.location.reload(); }, 300);
         //window.location.href = "/listmodule/"+id;
     };
     ProjctMenuComponent.prototype.addExpandClass = function (element) {

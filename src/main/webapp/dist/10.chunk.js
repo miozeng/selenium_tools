@@ -75,7 +75,7 @@ var ProjectComponent = (function () {
     ProjectComponent.prototype.ngOnInit = function () {
         var _this = this;
         this.browserLang = this.translate.getBrowserLang();
-        this.baseurl = this.layoutService.get_base_url() + '/project/';
+        this.baseurl = '/selenium_tools/project/';
         this.layoutService.get_projects().subscribe(function (res) {
             _this.projects = res;
             console.log("projects:" + res);

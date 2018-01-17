@@ -36,81 +36,76 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var LayoutService = (function () {
     function LayoutService(httpClient) {
         this.httpClient = httpClient;
-        // baseUrl:string = "http://localhost:8080/selenium_tools";
-        this.baseUrl = "";
     }
-    LayoutService.prototype.get_base_url = function () {
-        return this.baseUrl;
-    };
     LayoutService.prototype.get_projects = function () {
-        return this.httpClient.get(this.baseUrl + '/selenium_tools/project/list');
+        return this.httpClient.get('/selenium_tools/project/list');
     };
     LayoutService.prototype.get_project_byid = function (id) {
-        return this.httpClient.get(this.baseUrl + '/selenium_tools/project/findById/' + id);
+        return this.httpClient.get('/selenium_tools/project/findById/' + id);
     };
     LayoutService.prototype.run_project_test = function (id, iscreate) {
-        return this.httpClient.get(this.baseUrl + '/selenium_tools/project/runTest/' + id + '/' + iscreate);
+        return this.httpClient.get('/selenium_tools/project/runTest/' + id + '/' + iscreate);
     };
     LayoutService.prototype.post_project = function (project) {
-        return this.httpClient.post(this.baseUrl + '/selenium_tools/project/save', project);
+        return this.httpClient.post('/selenium_tools/project/save', project);
     };
     LayoutService.prototype.delete_project_byid = function (id) {
-        return this.httpClient.get(this.baseUrl + '/selenium_tools/project/delete/' + id);
+        return this.httpClient.get('/selenium_tools/project/delete/' + id);
     };
     LayoutService.prototype.get_modules = function (projectId) {
-        return this.httpClient.get(this.baseUrl + '/selenium_tools/modul/list/' + projectId);
+        return this.httpClient.get('/selenium_tools/modul/list/' + projectId);
     };
     LayoutService.prototype.get_module_byid = function (id) {
-        return this.httpClient.get(this.baseUrl + '/selenium_tools/modul/findById/' + id);
+        return this.httpClient.get('/selenium_tools/modul/findById/' + id);
     };
     LayoutService.prototype.run_module_test = function (id, iscreate) {
-        return this.httpClient.get(this.baseUrl + '/selenium_tools/modul/runTest/' + id + '/' + iscreate);
+        return this.httpClient.get('/selenium_tools/modul/runTest/' + id + '/' + iscreate);
     };
     LayoutService.prototype.post_module = function (module) {
-        return this.httpClient.post(this.baseUrl + '/selenium_tools/modul/save', module);
+        return this.httpClient.post('/selenium_tools/modul/save', module);
     };
     LayoutService.prototype.delete_module_byid = function (id) {
-        return this.httpClient.get(this.baseUrl + '/selenium_tools/modul/delete/' + id);
+        return this.httpClient.get('/selenium_tools/modul/delete/' + id);
     };
     LayoutService.prototype.get_cases = function (moduleId) {
-        return this.httpClient.get(this.baseUrl + '/selenium_tools/testcase/list/' + moduleId);
+        return this.httpClient.get('/selenium_tools/testcase/list/' + moduleId);
     };
     LayoutService.prototype.get_case_byid = function (id) {
-        return this.httpClient.get(this.baseUrl + '/selenium_tools/testcase/findById/' + id);
+        return this.httpClient.get('/selenium_tools/testcase/findById/' + id);
     };
     LayoutService.prototype.run_case_test = function (id) {
-        return this.httpClient.get(this.baseUrl + '/selenium_tools/testcase/excutecase/' + id);
+        return this.httpClient.get('/selenium_tools/testcase/excutecase/' + id);
     };
     LayoutService.prototype.post_case = function (c) {
-        return this.httpClient.post(this.baseUrl + '/selenium_tools/testcase/save', c);
+        return this.httpClient.post('/selenium_tools/testcase/save', c);
     };
     LayoutService.prototype.delete_case_byid = function (id) {
-        return this.httpClient.get(this.baseUrl + '/selenium_tools/testcase/delete/' + id);
+        return this.httpClient.get('/selenium_tools/testcase/delete/' + id);
     };
     LayoutService.prototype.download_case_test = function (id) {
-        // return this.httpClient.get(this.baseUrl +'/selenium_tools/testcase/casetocvs/?caseId='+id);
-        window.location.href = this.baseUrl + '/selenium_tools/testcase/casetocvs/?caseId=' + id;
+        // return this.httpClient.get('/selenium_tools/testcase/casetocvs/?caseId='+id);
+        window.location.href = '/selenium_tools/testcase/casetocvs/?caseId=' + id;
     };
     LayoutService.prototype.url_cvsimport = function (moduleId) {
-        return this.baseUrl + '/selenium_tools/testcase/cvsimport/' + moduleId;
+        return '/selenium_tools/testcase/cvsimport/' + moduleId;
     };
     LayoutService.prototype.url_cvsexcut = function () {
-        return this.baseUrl + '/selenium_tools/testcase/cvsexcut';
+        return '/selenium_tools/testcase/cvsexcut';
     };
     LayoutService.prototype.get_steps = function (caseId) {
-        return this.httpClient.get(this.baseUrl + '/selenium_tools/step/list/' + caseId);
+        return this.httpClient.get('/selenium_tools/step/list/' + caseId);
     };
     LayoutService.prototype.get_maxSeq_byid = function (caseId) {
-        return this.httpClient.get(this.baseUrl + '/selenium_tools/step/getMaxSeq/' + caseId);
+        return this.httpClient.get('/selenium_tools/step/getMaxSeq/' + caseId);
     };
     LayoutService.prototype.get_step_byid = function (id) {
-        return this.httpClient.get(this.baseUrl + '/selenium_tools/step/findById/' + id);
+        return this.httpClient.get('/selenium_tools/step/findById/' + id);
     };
     LayoutService.prototype.delete_step_byid = function (id) {
-        return this.httpClient.get(this.baseUrl + '/selenium_tools/step/delete/' + id);
+        return this.httpClient.get('/selenium_tools/step/delete/' + id);
     };
     LayoutService.prototype.post_step = function (step) {
-        return this.httpClient.post(this.baseUrl + '/selenium_tools/step/save', step);
+        return this.httpClient.post('/selenium_tools/step/save', step);
     };
     return LayoutService;
 }());

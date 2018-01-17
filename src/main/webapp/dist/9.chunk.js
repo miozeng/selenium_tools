@@ -81,7 +81,7 @@ var StepComponent = (function () {
         var _this = this;
         this.browserLang = this.translate.getBrowserLang();
         this.route.params.subscribe(function (params) { return _this.caseId = params.caseId; });
-        this.baseurl = this.layoutService.get_base_url() + '/project/';
+        this.baseurl = '/selenium_tools/project/';
         if (this.caseId != 0) {
             this.layoutService.get_steps(this.caseId).subscribe(function (res) {
                 _this.steps = res;
